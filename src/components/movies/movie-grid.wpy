@@ -1,0 +1,23 @@
+<style lang="stylus" scoped>
+
+</style>
+<template>
+  <view class="movie-grid">
+    <repeat>
+      <view class="singer-movie-container">
+        <MovieItem></MovieItem>
+      </view>
+    </repeat>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import MovieItem from './movie-item.wpy'
+
+  export default class MovieGrid extends wepy.component {
+    data = {}
+    componets = {
+      MovieItem
+    }
+  }
+</script>
