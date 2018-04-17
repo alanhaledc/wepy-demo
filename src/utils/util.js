@@ -23,7 +23,7 @@ export const formateStars = (stars) => {
  * @param url
  * @param cb
  */
-export const http = (url, cb) => {
+export const http = (url) => {
   return new Promise((resolve, reject) => {
     wepy.request({
       url: url,
@@ -31,15 +31,43 @@ export const http = (url, cb) => {
       header: {
         'Content-Type': 'json'
       },
-      success: function (res) {
-        cb(res.data)
-        resolve()
+      success: res => {
+        resolve(res.data)
       },
-      fail: function (error) {
+      fail: error => {
         reject(error)
       }
     })
   })
+}
+
+/**
+ * 提取电影数据
+ * @param data
+ * @return {Array}
+ */
+export const processMoviesData = (data) => {
+  let movies = []
+  let subject
+  let title
+
+  for (let key in data.subjects) {
+    subject = data.subjects[key]
+    title = subject.title
+    if (title.length >= 0) {
+      title = title.substring(0, 6) + '...'
+    }
+    let temp = {
+      // 转化星星数为数组
+      stars: formateStars(subject.rating.stars),
+      title: title,
+      average: subject.rating.average === 0 ? '' : subject.rating.average,
+      coverageUrl: subject.images.large,
+      movieId: subject.id
+    }
+    movies.push(temp)
+  }
+  return movies
 }
 
 /**
