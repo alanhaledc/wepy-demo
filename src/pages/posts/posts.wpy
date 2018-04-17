@@ -30,6 +30,10 @@
     }
 
     methods = {
+      /**
+       * 跳转到文章细节页面
+       * @param postId
+       */
       onPostDetailTap(postId) {
         wepy.navigateTo({
           url: `./post-detail?id=${postId}`
