@@ -152,7 +152,7 @@
 <script>
   import wepy from 'wepy'
   import Stars from '../../components/movies/stars'
-  import {formateStars, formateCasts, formateCastsInfo} from '../../utils/util'
+  import {formateStars, formateCasts, formateCastsInfo, http} from '../../utils/util'
 
   export default class MovieDetail extends wepy.page {
     data = {
@@ -162,31 +162,15 @@
     onLoad(options) {
       const movieId = options.id
       const detailUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/subject/${movieId}`
-      const promiseObj = this.getMovieListData(detailUrl)
-      promiseObj.then(data => {
+      http(detailUrl).then(data => {
         return this.rocessDoubanData(data)
       })
     }
 
-    getMovieListData(url) {
-      return new Promise((resolve, reject) => {
-        wepy.request({
-          url: url,
-          method: 'GET',
-          header: {
-            'Content-Type': 'json'
-          },
-          success: res => {
-            resolve(res.data)
-          },
-          fail: error => {
-            console.log(error)
-            reject(error)
-          }
-        })
-      })
-    }
-
+    /**
+     * 提取电影详情数据
+     * @param data
+     */
     rocessDoubanData(data) {
       // 导演字段处理
       let director = {
@@ -224,11 +208,16 @@
       this.movie = movie
       this.$apply()
 
+      // 设置导航栏标题
       wepy.setNavigationBarTitle({
         title: this.movie.title
       })
     }
 
+    /**
+     * 图片预览
+     * @param e
+     */
     viewMoviePostImg(e) {
       const url = e.currentTarget.dataset.src
       wepy.previewImage({

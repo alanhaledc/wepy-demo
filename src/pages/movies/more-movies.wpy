@@ -9,7 +9,7 @@
 <script>
   import wepy from 'wepy'
   import MovieGrid from '../../components/movies/movie-grid'
-  import {formateStars} from '../../utils/util'
+  import {http, processMoviesData} from '../../utils/util'
 
   export default class MoreMovies extends wepy.page {
     config = {
@@ -24,6 +24,10 @@
     }
 
     methods = {
+      /**
+       * 跳转到电影详情页面
+       * @param movieId
+       */
       onMovieDetailTap(movieId) {
         wepy.navigateTo({
           url: `/pages/movies/movie-detail?id=${movieId}`
@@ -33,6 +37,8 @@
 
     onLoad(options) {
       const type = options.type
+
+      // 设置导航栏
       wepy.setNavigationBarTitle({
         title: type
       })
@@ -50,47 +56,21 @@
           break
       }
       this.requestUrl = dataUrl
-      this.getMovieListData(dataUrl)
-    }
-
-    getMovieListData(url) {
-      wepy.request({
-        url: url,
-        method: 'GET',
-        header: {
-          'Content-Type': 'json'
-        },
-        success: res => {
-          this.processDoubanData(res.data)
-        },
-        fail: error => {
-          console.log(error)
-        }
+      http(dataUrl).then(data => {
+        return this.processDoubanData(data)
       })
     }
 
-    processDoubanData(data) {
-      let movies = []
-      let subject
-      let title
-      let temp
+    onReachBottom() {
+      this.onScrollLower()
+    }
 
-      for (let key in data.subjects) {
-        subject = data.subjects[key]
-        title = subject.title
-        if (title.length >= 0) {
-          title = title.substring(0, 6) + '...'
-        }
-        temp = {
-          // 转化星星数为数组
-          stars: formateStars(subject.rating.stars),
-          title: title,
-          average: subject.rating.average === 0 ? '' : subject.rating.average,
-          coverageUrl: subject.images.large,
-          movieId: subject.id
-        }
-        movies.push(temp)
-      }
+    /**
+     * 提取电影数据
+     * @param data
+     */
+    processDoubanData(data) {
+      const movies = processMoviesData(data)
 
       let totalMovies = {}
 
@@ -110,23 +90,30 @@
       wepy.hideNavigationBarLoading()
     }
 
-    onReachBottom() {
-      this.onScrollLower()
-    }
-
+    /**
+     * 下拉到底部时加载更多电影数据
+     */
     onScrollLower() {
       let nextUrl = `${this.requestUrl}?start=${this.totalCount}&count=20`
-      this.getMovieListData(nextUrl)
+      http(nextUrl).then(data => {
+        return this.processDoubanData(data)
+      })
       // 加载数据时在当前页面显示导航条加载动画
       wepy.showNavigationBarLoading()
     }
 
+    /**
+     * 下拉刷新页面
+     */
     onPullDownRefresh() {
       let refreshUrl = `${this.data.requestUrl}?start=0&count=20`
       // 清空原有数据
       this.movie = {}
       this.isEmpty = true
-      this.getMovieListData(refreshUrl)
+      http(refreshUrl).then(data => {
+        return this.processDoubanData(data)
+      })
+
       // 请求数据成功后停止下拉动画
       wepy.stopPullDownRefresh()
     }

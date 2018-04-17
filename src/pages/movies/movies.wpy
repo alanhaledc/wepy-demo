@@ -8,9 +8,15 @@
              :searchResult.sync="searchResult"
              @onBindConfirm.user="onBindConfirm"></SearchBar>
   <view class="movies-list-container" wx:if="{{isContainerShow}}">
-    <movielist1 :movies.sync="inTheaters" @onMovieDetailTap.user="onMovieDetailTap"></movielist1>
-    <movielist2 :movies.sync="comingSoon" @onMovieDetailTap.user="onMovieDetailTap"></movielist2>
-    <movielist3 :movies.sync="top250" @onMovieDetailTap.user="onMovieDetailTap"></movielist3>
+    <movielist1 :movies.sync="inTheaters"
+                @onMovieDetailTap.user="onMovieDetailTap"
+                @onMoreMoviesTap.user="onMoreMoviesTap"></movielist1>
+    <movielist2 :movies.sync="comingSoon"
+                @onMovieDetailTap.user="onMovieDetailTap"
+                @onMoreMoviesTap.user="onMoreMoviesTap"></movielist2>
+    <movielist3 :movies.sync="top250"
+                @onMovieDetailTap.user="onMovieDetailTap"
+                @onMoreMoviesTap.user="onMoreMoviesTap"></movielist3>
   </view>
   <view class="search-panel" wx:if="{{isSearchPanelShow}}">
     <MovieGrid :movies.sync="searchResult" @onMovieDetailTap.user="onMovieDetailTap"></MovieGrid>
@@ -18,7 +24,7 @@
 </template>
 <script>
   import wepy from 'wepy'
-  import {formateStars} from '../../utils/util'
+  import {http, processMoviesData} from '../../utils/util'
   import MovieList from '../../components/movies/movie-list'
   import SearchBar from '../../components/movies/search-bar'
   import MovieGrid from '../../components/movies/movie-grid'
@@ -38,6 +44,38 @@
       isSearchPanelShow: false
     }
 
+    methods = {
+      /**
+       * input确认后输出搜索结果
+       * @param text
+       */
+      onBindConfirm(text) {
+        const searchUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/search?q=${text}`
+        console.log(searchUrl)
+        this.processMovieTypeData(searchUrl, '搜索结果')
+      },
+
+      /**
+       * 跳转到更多电影页面
+       * @param type
+       */
+      onMoreMoviesTap(type) {
+        wepy.navigateTo({
+          url: `/pages/movies/more-movies?type=${type}`
+        })
+      },
+
+      /**
+       * 跳转到电影详情页面
+       * @param movieId
+       */
+      onMovieDetailTap(movieId) {
+        wepy.navigateTo({
+          url: `/pages/movies/movie-detail?id=${movieId}`
+        })
+      }
+    }
+
     onLoad() {
       const inTheatersUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/in_theaters?start=0&count=3`
       const comingSoonUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/coming_soon?start=0&count=3`
@@ -47,10 +85,14 @@
       this.processMovieTypeData(top250Url, '豆瓣Top250')
     }
 
+    /**
+     * 分类型整理数据
+     * @param url
+     * @param type
+     */
     processMovieTypeData(url, type) {
       const typeUrl = url
-      const promiseObj = this.getMovieListData(typeUrl)
-      promiseObj.then((data) => {
+      http(typeUrl).then(data => {
         return this.processDoubanData(data, type)
       }).then(obj => {
         if (type === '正在热映') {
@@ -66,62 +108,17 @@
       })
     }
 
-    getMovieListData(url) {
-      return new Promise((resolve, reject) => {
-        wepy.request({
-          url: url,
-          method: 'GET',
-          header: {
-            'Content-Type': 'json'
-          },
-          success: res => {
-            resolve(res.data)
-          },
-          fail: error => {
-            console.log(error)
-            reject(error)
-          }
-        })
-      })
-    }
-
+    /**
+     * 提取数据
+     * @param data
+     * @param type
+     * @return {{type: *, list: Array}}
+     */
     processDoubanData(data, type) {
-      let movies = []
-      let subject
-      let title
-
-      for (let key in data.subjects) {
-        subject = data.subjects[key]
-        title = subject.title
-        if (title.length >= 0) {
-          title = title.substring(0, 6) + '...'
-        }
-        let temp = {
-          // 转化星星数为数组
-          stars: formateStars(subject.rating.stars),
-          title: title,
-          average: subject.rating.average === 0 ? '' : subject.rating.average,
-          coverageUrl: subject.images.large,
-          movieId: subject.id
-        }
-        movies.push(temp)
-      }
+      const movies = processMoviesData(data)
       return {
         type: type,
         list: movies
-      }
-    }
-    methods = {
-      onBindConfirm(text) {
-        const searchUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/search?q=${text}`
-        console.log(searchUrl)
-        this.processMovieTypeData(searchUrl, '搜索结果')
-      },
-
-      onMovieDetailTap(movieId) {
-        wepy.navigateTo({
-          url: `/pages/movies/movie-detail?id=${movieId}`
-        })
       }
     }
 

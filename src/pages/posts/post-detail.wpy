@@ -103,7 +103,6 @@
   const postList = postsData.postList
 
   export default class PostDetail extends wepy.page {
-
     data = {
       currentPostId: null,
       currentPost: {},
