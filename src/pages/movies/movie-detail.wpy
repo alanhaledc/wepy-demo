@@ -159,12 +159,15 @@
       movie: {}
     }
 
-    onLoad(options) {
+    async onLoad(options) {
       const movieId = options.id
       const detailUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/subject/${movieId}`
-      http(detailUrl).then(data => {
-        return this.rocessDoubanData(data)
-      })
+      const httpData = await http(detailUrl)
+      await this.rocessDoubanData(httpData)
+
+      // http(detailUrl).then(data => {
+      //   return this.rocessDoubanData(data)
+      // })
     }
 
     /**
