@@ -53,9 +53,7 @@
     methods = {
       onMoreMoviesTap(e) {
         const type = e.currentTarget.dataset.moviestype
-        wepy.navigateTo({
-          url: `/pages/movies/more-movies?type=${type}`
-        })
+        this.$emit('onMoreMoviesTap', type)
       },
       onMovieDetailTap(movieId) {
         this.$emit('onMovieDetailTap', movieId)
