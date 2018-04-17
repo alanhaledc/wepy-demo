@@ -1,22 +1,39 @@
 <style lang="stylus" scoped>
-
+  .movie-grid
+    margin 40rpx 0 40rpx 6rpx
+    .singer-movie-container
+      float left
+      margin-bottom 40rpx
 </style>
 <template>
   <view class="movie-grid">
-    <repeat>
+    <repeat for="{{movies}}" item="movie" key="moreMovie">
       <view class="singer-movie-container">
-        <MovieItem></MovieItem>
+        <MovieItem :movie.sync="movie" @onMovieDetailTap.user="onMovieDetailTap"></MovieItem>
       </view>
     </repeat>
+
   </view>
 </template>
 <script>
   import wepy from 'wepy'
-  import MovieItem from './movie-item.wpy'
+  import MovieItem from './movie-item'
 
   export default class MovieGrid extends wepy.component {
-    data = {}
-    componets = {
+    props = {
+      movies: {
+        type: Array,
+        default: []
+      }
+    }
+
+    methods = {
+      onMovieDetailTap(movieId) {
+        this.$emit('onMovieDetailTap', movieId)
+      }
+    }
+
+    components = {
       MovieItem
     }
   }

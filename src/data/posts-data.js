@@ -87,7 +87,7 @@ const postList = [
     headImgSrc: '/images/post/vr.png',
     author: '深白色',
     date: 'Nov 20 2016',
-    avatar: '../../../images/avatar/3.png',
+    avatar: '/images/avatar/3.png',
     postId: 4,
     music: {
       url: 'http://ws.stream.qqmusic.qq.com/C100000Zn0vS4fKKo8.m4a?fromtag=38',
@@ -106,7 +106,7 @@ const postList = [
     headImgSrc: '/images/iqiyi.png',
     author: '深白色',
     date: 'Nov 20 2016',
-    avatar: '../../../images/avatar/5.png',
+    avatar: '/images/avatar/5.png',
     postId: 5,
     music: {
       url: 'http://ws.stream.qqmusic.qq.com/C100002I8eGJ28BI17.m4a?fromtag=38',
@@ -118,15 +118,15 @@ const postList = [
 
 const swiperList = [
   {
-    imgSrc: '../../images/post/xiaolong.jpg',
+    imgSrc: '/images/post/xiaolong.jpg',
     postId: 3
   },
   {
-    imgSrc: '../../images/post/vr.png',
+    imgSrc: '/images/post/vr.png',
     postId: 4
   },
   {
-    imgSrc: '../../images/iqiyi.png',
+    imgSrc: '/images/iqiyi.png',
     postId: 5
   }
 ]

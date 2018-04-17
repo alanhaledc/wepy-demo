@@ -1,0 +1,45 @@
+<style lang="stylus" scoped>
+
+</style>
+<template>
+  <view>
+    <Swiper :swiperList.sync="swiperList" @onPostDetailTap.user="onPostDetailTap"/>
+    <repeat for="{{postList}}" item="post" key="post">
+        <PostItem :postItem.sync="post" @onPostDetailTap.user="onPostDetailTap"/>
+    </repeat>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import Swiper from '../../components/posts/swiper'
+  import PostItem from '../../components/posts/post-item'
+
+  import postsData from '../../data/posts-data'
+
+  const swiperList = postsData.swiperList
+  const postList = postsData.postList
+
+  export default class Posts extends wepy.page {
+    config = {
+      navigationBarTitleText: '文章'
+    }
+
+    data = {
+      swiperList: swiperList,
+      postList: postList
+    }
+
+    methods = {
+      onPostDetailTap(postId) {
+        wepy.navigateTo({
+          url: `./post-detail?id=${postId}`
+        })
+      }
+    }
+
+    components = {
+      Swiper,
+      PostItem
+    }
+  }
+</script>

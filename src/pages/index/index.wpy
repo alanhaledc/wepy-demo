@@ -29,8 +29,8 @@
 </style>
 <template>
   <view class="container">
-    <image class="user-avatar" src="../images/avatar.png"></image>
-    <text class="user-name">Hello,<text style="color: #f00">风华</text></text>
+    <image class="user-avatar" src="../../images/avatar.png"></image>
+    <text class="user-name">Hello,<text style="color: #f00">Guys</text></text>
     <view class="moto-container" @tap="onTap">
       <text class="moto">开启小程序之旅</text>
     </view>
@@ -48,7 +48,7 @@
     methods = {
       onTap() {
         wepy.switchTab({
-          url: './posts'
+          url: '../../pages/posts/posts'
         })
       }
     }

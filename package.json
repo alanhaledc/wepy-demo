@@ -17,7 +17,7 @@
   "author": "haledc <haledeng88@163.com>",
   "license": "MIT",
   "dependencies": {
-    "wepy": "^1.7.1",
+    "wepy": "^1.7.2-alpha1",
     "wepy-async-function": "^1.4.4",
     "wepy-com-toast": "^1.0.2"
   },
@@ -36,7 +36,6 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^2.0.1",
     "wepy-compiler-babel": "^1.5.1",
-    "wepy-compiler-less": "^1.3.10",
     "wepy-compiler-stylus": "^1.3.12",
     "wepy-eslint": "^1.5.3",
     "wepy-plugin-imagemin": "^1.5.3",

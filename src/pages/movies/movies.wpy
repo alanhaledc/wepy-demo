@@ -1,0 +1,136 @@
+<style lang="stylus" scoped>
+  .movies-list-container
+    background-color #f2f2f2
+</style>
+<template>
+  <SearchBar :isContainerShow.sync="isContainerShow"
+             :isSearchPanelShow.sync="isSearchPanelShow"
+             :searchResult.sync="searchResult"
+             @onBindConfirm.user="onBindConfirm"></SearchBar>
+  <view class="movies-list-container" wx:if="{{isContainerShow}}">
+    <movielist1 :movies.sync="inTheaters" @onMovieDetailTap.user="onMovieDetailTap"></movielist1>
+    <movielist2 :movies.sync="comingSoon" @onMovieDetailTap.user="onMovieDetailTap"></movielist2>
+    <movielist3 :movies.sync="top250" @onMovieDetailTap.user="onMovieDetailTap"></movielist3>
+  </view>
+  <view class="search-panel" wx:if="{{isSearchPanelShow}}">
+    <MovieGrid :movies.sync="searchResult" @onMovieDetailTap.user="onMovieDetailTap"></MovieGrid>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {formateStars} from '../../utils/util'
+  import MovieList from '../../components/movies/movie-list'
+  import SearchBar from '../../components/movies/search-bar'
+  import MovieGrid from '../../components/movies/movie-grid'
+
+  export default class Movies extends wepy.page {
+    config = {
+      navigationBarTitleText: '电影'
+    }
+
+    data = {
+      inTheaters: {},
+      comingSoon: {},
+      top250: {},
+      movies: {},
+      searchResult: [],
+      isContainerShow: true,
+      isSearchPanelShow: false
+    }
+
+    onLoad() {
+      const inTheatersUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/in_theaters?start=0&count=3`
+      const comingSoonUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/coming_soon?start=0&count=3`
+      const top250Url = `${this.$parent.globalData.g_doubanBase}/v2/movie/top250?start=0&count=3`
+      this.processMovieTypeData(inTheatersUrl, '正在热映')
+      this.processMovieTypeData(comingSoonUrl, '即将上映')
+      this.processMovieTypeData(top250Url, '豆瓣Top250')
+    }
+
+    processMovieTypeData(url, type) {
+      const typeUrl = url
+      const promiseObj = this.getMovieListData(typeUrl)
+      promiseObj.then((data) => {
+        return this.processDoubanData(data, type)
+      }).then(obj => {
+        if (type === '正在热映') {
+          this.inTheaters = obj
+        } if (type === '即将上映') {
+          this.comingSoon = obj
+        } if (type === '豆瓣Top250') {
+          this.top250 = obj
+        } if (type === '搜索结果') {
+          this.searchResult = obj.list
+        }
+        this.$apply()
+      })
+    }
+
+    getMovieListData(url) {
+      return new Promise((resolve, reject) => {
+        wepy.request({
+          url: url,
+          method: 'GET',
+          header: {
+            'Content-Type': 'json'
+          },
+          success: res => {
+            resolve(res.data)
+          },
+          fail: error => {
+            console.log(error)
+            reject(error)
+          }
+        })
+      })
+    }
+
+    processDoubanData(data, type) {
+      let movies = []
+      let subject
+      let title
+
+      for (let key in data.subjects) {
+        subject = data.subjects[key]
+        title = subject.title
+        if (title.length >= 0) {
+          title = title.substring(0, 6) + '...'
+        }
+        let temp = {
+          // 转化星星数为数组
+          stars: formateStars(subject.rating.stars),
+          title: title,
+          average: subject.rating.average === 0 ? '' : subject.rating.average,
+          coverageUrl: subject.images.large,
+          movieId: subject.id
+        }
+        movies.push(temp)
+      }
+      return {
+        type: type,
+        list: movies
+      }
+    }
+    methods = {
+      onBindConfirm(text) {
+        const searchUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/search?q=${text}`
+        console.log(searchUrl)
+        this.processMovieTypeData(searchUrl, '搜索结果')
+      },
+
+      onMovieDetailTap(movieId) {
+        wepy.navigateTo({
+          url: `/pages/movies/movie-detail?id=${movieId}`
+        })
+      }
+    }
+
+    components = {
+      movielist1: MovieList,
+      movielist2: MovieList,
+      movielist3: MovieList,
+      SearchBar,
+      MovieGrid
+    }
+  }
+</script>

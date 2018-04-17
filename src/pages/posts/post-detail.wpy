@@ -1,0 +1,264 @@
+<style lang="stylus" scoped>
+  .post-detail
+    display flex
+    flex-direction column
+    .head-image
+      width 100%
+      height 460rpx
+    .audio
+      width: 102rpx
+      height: 110rpx
+      position: absolute
+      left: 50%
+      margin-left: -51rpx
+      top: 180rpx
+      opacity: 0.6
+    .author-date
+      flex-direction: row
+      margin-left: 30rpx
+      margin-top: 20rpx
+      .avatar
+        width 64rpx
+        height 64rpx
+        vertical-align middle
+      .author
+        font-size 30rpx
+        font-weight 300
+        margin-left 20rpx
+        vertical-align middle
+        color #666
+      .const-text
+        font-size 24rpx
+        color #999
+        margin-left 20rpx
+      .date
+        font-size 24rpx
+        margin-left 30rpx
+        vertical-align middle
+        color #999
+    .title
+      margin-left 40rpx
+      font-size 36rpx
+      font-weight 700
+      margin-top 30rpx
+      letter-spacing 2px
+      color #4b556c
+    .tool
+      margin-top 20rpx
+      .circle-img
+        float right
+        margin-right 40rpx
+        vertical-align middle
+        image
+          width 90rpx
+          height 90rpx
+      .horizon
+        width 660rpx
+        height 1px
+        background-color #e5e5e5
+        vertical-align middle
+        position relative
+        top 46rpx
+        margin 0 auto
+        z-index: -99
+    .detail
+      color #666
+      margin 20rpx 30rpx 0 30rpx
+      line-height 40rpx
+      letter-spacing 2px
+</style>
+<template>
+  <view class="post-detail">
+    <!--顶部图片-->
+    <image class="head-image" src="{{isPlaying ? currentPost.music.coverImg : currentPost.headImgSrc}}"/>
+    <!--播放音乐图标-->
+    <image @tap="onMusicTop"
+           class="audio" src="{{isPlaying ? '/images/music/music-stop.png' : '/images/music/music-start.png'}}"/>
+    <!--作者和时间栏-->
+    <view class="author-date">
+      <image class="avatar" src="{{currentPost.avatar}}"/>
+      <text class="author">{{currentPost.author}}</text>
+      <text class="const-text">发表于</text>
+      <text class="date">{{currentPost.dateTime}}</text>
+    </view>
+    <!--文章标题-->
+    <text class="title">{{currentPost.title}}</text>
+    <!--文章收藏和分享栏-->
+    <view class="tool">
+      <view class="circle-img">
+        <image wx:if="{{isCollected}}" @tap="onCollectionTap" src="/images/icon/collection.png"/>
+        <image wx:else @tap="onCollectionTap" src="/images/icon/collection-anti.png"/>
+        <image class="share-img" @tap="onShareTap" src="/images/icon/share.png"/>
+      </view>
+      <view class="horizon"/>
+    </view>
+    <!--文章内容-->
+    <text class="detail">{{currentPost.detail}}</text>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import postsData from '../../data/posts-data'
+
+  const postList = postsData.postList
+
+  export default class PostDetail extends wepy.page {
+
+    data = {
+      currentPostId: null,
+      currentPost: {},
+      isCollected: false,
+      isPlaying: false
+    }
+
+    onLoad(options) {
+      const postId = options.id
+      this.currentPostId = postId
+      const postData = postList[postId]
+      this.currentPost = postData
+
+      wepy.setNavigationBarTitle({
+        title: this.currentPost.title
+      })
+
+      this.initPostsCollected(postId)
+
+      this.setAudioMonitor()
+
+      if (this.$parent.globalData.g_isPlaying && this.$parent.globalData.g_currentPostId === postId) {
+        this.isPlaying = true
+      }
+    }
+
+    /**
+     * 文章收藏或者取消收藏
+     */
+    onCollectionTap() {
+      let postsCollected = wepy.getStorageSync('posts_collected')
+      // 取得当前页面文章收藏数据(是否收藏)
+      let isPostCollected = postsCollected[this.currentPostId]
+      // 点击后需要取反(收藏变不收藏，不收藏变收藏)
+      isPostCollected = !isPostCollected
+      // 更新点击后的收藏状态
+      postsCollected[this.currentPostId] = isPostCollected
+
+      // 显示消息提示框
+      this.showToast(postsCollected, isPostCollected)
+    }
+
+    /**
+     * 消息弹窗
+     * @param postsCollected
+     * @param isPostCollected
+     */
+    showToast(postsCollected, isPostCollected) {
+      // 同时更新缓存
+      wepy.setStorageSync('posts_collected', postsCollected)
+      // 同时更新收藏数据
+      this.isCollected = isPostCollected
+
+      // 根据收藏状态提示消息
+      wepy.showToast({
+        title: isPostCollected ? '收藏成功' : '取消成功',
+        duration: 500
+      })
+    }
+
+    /**
+     * 文章分享功能
+     */
+    onShareTap() {
+      const itemList = [
+        '分享给微信好友',
+        '分享到朋友圈',
+        '分享到QQ',
+        '分享到微博'
+      ]
+      wepy.showActionSheet({
+        itemList: itemList,
+        itemColor: '#405f80',
+        success: function (res) {
+          wepy.showModal({
+            title: `用户${itemList[res.tapIndex]}`,
+            content: '现在小程序无法实现分享功能，什么时候能支持呢？'
+          })
+        }
+      })
+    }
+
+    /**
+     * 音乐播放和暂停
+     */
+    onMusicTop() {
+      let isPlaying = this.isPlaying
+      const currentPostId = this.currentPostId
+      const currentPost = postList[currentPostId]
+      if (isPlaying) {
+        wepy.pauseBackgroundAudio()
+        this.isPlaying = false
+      } else {
+        wepy.playBackgroundAudio({
+          dataUrl: currentPost.music.url,
+          title: currentPost.music.title,
+          coverImgUrl: currentPost.music.coverImg
+        })
+        this.isPlaying = true
+      }
+    }
+
+    /**
+     * 初始化文章收藏状态
+     */
+    initPostsCollected(postId) {
+      // 加载后获取缓存
+      const postsCollected = wepy.getStorageSync('posts_collected')
+      if (postsCollected) {
+        const isPostCollected = postsCollected[postId]
+        // 赋值给变量
+        this.isCollected = isPostCollected
+      } else {
+        const postsCollected = {}
+        // 初始值为false
+        postsCollected[postId] = false
+        // 存储
+        wepy.setStorageSync('posts_collected', postsCollected)
+      }
+    }
+
+    /**
+     * 监听音乐播放、暂停和停止
+     */
+    setAudioMonitor() {
+      // 公共开关和页面开关同步
+      // 监听音乐播放
+      wepy.onBackgroundAudioPlay(() => {
+        this.isPlaying = true
+        // 更新全局变量数据
+        this.$parent.globalData.g_isPlaying = true
+        this.$parent.globalData.g_currentPostId = this.currentPostId
+        // 触发脏数据检查
+        this.$apply()
+      })
+
+      // 监听音乐暂停
+      wepy.onBackgroundAudioPause(() => {
+        this.isPlaying = false
+        // 更新全局变量数据
+        this.$parent.globalData.g_isPlaying = false
+        this.$parent.globalData.g_currentPostId = null
+        // 触发脏数据检查
+        this.$apply()
+      })
+
+      // 监听音乐停止
+      wepy.onBackgroundAudioStop(() => {
+        this.isPlaying = false
+        // 更新全局变量数据
+        this.$parent.globalData.g_isPlaying = false
+        this.$parent.globalData.g_currentPostId = null
+        // 触发脏数据检查
+        this.$apply()
+      })
+    }
+  }
+</script>

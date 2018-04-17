@@ -1,0 +1,57 @@
+<style lang="stylus" scoped>
+  .movie-item
+    display flex
+    flex-direction column
+    padding 0 22rpx
+    .movie-img
+      width 200rpx
+      height 270rpx
+      padding-bottom 20rpx
+    .movie-title
+      margin-bottom 16rpx
+    .stars
+      display flex
+      .stars-container
+        display flex
+        height 17rpx
+        margin 6rpx 24rpx 0 0
+        image
+          padding-left 3rpx
+          width 17rpx
+          height 17rpx
+      .star-score
+        color #1f3463
+</style>
+<template>
+<view class="movie-item" @tap.stop="onMovieDetailTap" data-movieId="{{movie.movieId}}">
+  <image class="movie-img" src="{{movie.coverageUrl}}"></image>
+  <text class="movie-title">{{movie.title}}</text>
+  <view class="stars">
+    <view class="stars-container">
+      <repeat for="{{movie.stars}}" item="star" key="star">
+        <image src="{{star ? '/images/icon/star.png':'/images/icon/none-star.png'}}"></image>
+      </repeat>
+    </view>
+    <text class="star-score">{{movie.average}}</text>
+  </view>
+</view>
+</template>
+<script>
+  import wepy from 'wepy'
+
+  export default class MovieItem extends wepy.component {
+    props = {
+      movie: {
+        type: Object,
+        default: {}
+      }
+    }
+
+    methods = {
+      onMovieDetailTap(e) {
+        const movieId = e.currentTarget.dataset.movieid
+        this.$emit('onMovieDetailTap', movieId)
+      }
+    }
+  }
+</script>

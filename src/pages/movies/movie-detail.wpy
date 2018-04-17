@@ -1,0 +1,244 @@
+<style lang="stylus" scoped>
+  .movie-detail
+    display flex
+    flex-direction column
+    .head-img
+      width 100%
+      height 320rpx
+      filter blur(20px)
+    .head-img-hover
+      width 100%
+      height 320rpx
+      position absolute
+      top 0
+      left 0
+      display flex
+      flex-direction column
+      .main-title
+        font-size 19px
+        color #fff
+        font-weight bold
+        margin 50rpx 0 0 40rpx
+        letter-spacing 2px
+      .sub-title
+        font-size 28rpx
+        color: #fff
+        margin 30rpx 0 0 40rpx
+      .like
+        display flex
+        margin 30rpx 0 0 40rpx
+        .highlight-font
+          color #f21146
+          font-size 22rpx
+          margin-right 10rpx
+        .plain-font
+          color #666
+          font-size 22rpx
+          margin-right 30rpx
+
+    .movie-img
+      width 175rpx
+      height 238rpx
+      position absolute
+      top 160rpx
+      right 30rpx
+    .summary
+      margin 40rpx 0 0 40rpx
+      color #777
+      .original-title
+        color #1f3463
+        font-size 24rpx
+        font-weight bold
+        margin-bottom 40rpx
+      .flex-row
+        display flex
+        margin-bottom 10rpx
+        .mark
+          margin-right 30rpx
+          white-space nowrap
+          color #999
+
+
+    .hr
+      margin-top 45rpx
+      width 100%
+      height 1px
+      background-color #d9d9d9
+    .synopsis
+      margin 50rpx 0 0 40rpx
+      display flex
+      flex-direction column
+      .synopsis-font
+        color #999
+      .summary-content
+        margin 20rpx 40rpx 0 0
+        line-height 40rpx
+        letter-spacing 1px
+
+    .cast
+      margin 50rpx 0 0 40rpx
+      display flex
+      flex-direction column
+      .cast-font
+        color #999
+        margin-bottom 40rpx
+      .cast-imgs
+        white-space nowrap
+        .cast-container
+          display inline-flex
+          flex-direction column
+          margin 0 40rpx 50rpx 0
+          width 170rpx
+          text-align center
+          white-space normal
+          .cast-img
+            width 179rpx
+            height 220rpx
+          .cast-name
+            margin 10rpx auto 0
+</style>
+<template>
+<view class="movie-detail">
+  <image class="head-img" src="{{movie.movieImg}}" mode="aspectFill"></image>
+  <view class="head-img-hover">
+    <text class="main-title">{{movie.title}}</text>
+    <text class="sub-title">{{movie.country + '.' + movie.year}}</text>
+    <view class="like">
+      <text class="highlight-font">{{movie.wishCount}}</text>
+      <text class="plain-font">人喜欢</text>
+      <text class="highlight-font">{{movie.commentCount}}</text>
+      <text class="plain-font">人评论</text>
+    </view>
+  </view>
+  <image class="movie-img" src="{{movie.movieImg}}" data-src="{{movie.movieImg}}" @tap.stop="viewMoviePostImg"></image>
+  <view class="summary">
+    <view class="original-title">{{movie.originalTitle}}</view>
+    <view class="flex-row">
+      <text class="mark">评分</text>
+      <Stars :movie.sync="movie"></Stars>
+    </view>
+    <view class="flex-row">
+      <text class="mark">导演</text>
+      <text>{{movie.director.name}}</text>
+    </view>
+    <view class="flex-row">
+      <text class="mark">影人</text>
+      <text>{{movie.casts}}</text>
+    </view>
+    <view class="flex-row">
+      <text class="mark">类型</text>
+      <text>{{movie.genres}}</text>
+    </view>
+  </view>
+  <view class="hr"></view>
+  <view class="synopsis">
+    <text class="synopsis-font">剧情简介</text>
+    <text class="summary-content">{{movie.summary}}</text>
+  </view>
+  <view class="hr"></view>
+  <view class="cast">
+    <text class="cast-font">影人</text>
+    <scroll-view class="cast-imgs" scroll-x="true" style="width: 100%">
+      <repeat for="{{movie.castsInfo}}">
+        <view class="cast-container">
+          <image class="cast-img" src="{{item.avatar}}" data-src="{{item.avatar}}" @tap.stop="viewMoviePostImg"></image>
+          <text class="cast-name">{{item.name}}</text>
+        </view>
+      </repeat>
+    </scroll-view>
+  </view>
+</view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import Stars from '../../components/movies/stars'
+  import {formateStars, formateCasts, formateCastsInfo} from '../../utils/util'
+
+  export default class MovieDetail extends wepy.page {
+    data = {
+      movie: {}
+    }
+
+    onLoad(options) {
+      const movieId = options.id
+      const detailUrl = `${this.$parent.globalData.g_doubanBase}/v2/movie/subject/${movieId}`
+      const promiseObj = this.getMovieListData(detailUrl)
+      promiseObj.then(data => {
+        return this.rocessDoubanData(data)
+      })
+    }
+
+    getMovieListData(url) {
+      return new Promise((resolve, reject) => {
+        wepy.request({
+          url: url,
+          method: 'GET',
+          header: {
+            'Content-Type': 'json'
+          },
+          success: res => {
+            resolve(res.data)
+          },
+          fail: error => {
+            console.log(error)
+            reject(error)
+          }
+        })
+      })
+    }
+
+    rocessDoubanData(data) {
+      // 导演字段处理
+      let director = {
+        avatar: '',
+        name: ''
+        // id:''
+      }
+
+      if (data.directors[0] !== null) {
+        if (data.directors[0].avatar !== null) {
+          director.avatar = data.directors[0].avatars.large
+        }
+        director.name = data.directors[0].name
+        // director.id = data.directors[0].id
+      }
+
+      const movie = {
+        movieImg: data.images ? data.images.large : '',
+        country: data.countries.join('/'),
+        title: data.original_title,
+        originalTitle: data.original_title,
+        director: director,
+        wishCount: data.wish_count,
+        reviewsCount: data.reviews_count,
+        commentCount: data.comments_count,
+        year: data.year,
+        genres: data.genres.join('、'),
+        stars: formateStars(data.rating.stars),
+        score: data.rating.average === 0 ? '' : data.rating.average,
+        casts: formateCasts(data.casts),
+        castsInfo: formateCastsInfo(data.casts),
+        summary: data.summary ? data.summary : '暂无简介'
+      }
+
+      this.movie = movie
+      this.$apply()
+
+      wepy.setNavigationBarTitle({
+        title: this.movie.title
+      })
+    }
+
+    viewMoviePostImg(e) {
+      const url = e.currentTarget.dataset.src
+      wepy.previewImage({
+        current: url,
+        urls: [url]
+      })
+    }
+
+    components = {
+      Stars
+    }
+  }
+</script>

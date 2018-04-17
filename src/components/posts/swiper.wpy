@@ -1,35 +1,40 @@
 <style lang="stylus" scoped>
   swiper
     width 100%
-    height 460 rpx
+    height 460rpx
     image
       width 100%
-      height 460 rpx
+      height 460rpx
 </style>
 <template>
-  <swiper circular="true" internal="1000">
+  <swiper indicator-dots="true"
+          indicator-active-color="#fff"
+          autoplay="true"
+          circular="true"
+          interval="2000">
     <block wx:for="{{swiperList}}" wx:key="swiper">
       <swiper-item>
-        <image src="{{item.imgSrc}}"></image>
+        <image src="{{item.imgSrc}}" data-postId="{{item.postId}}" @tap="onPostDetailTap"></image>
       </swiper-item>
     </block>
   </swiper>
 </template>
 <script>
   import wepy from 'wepy'
-  import postsData from '../../data/posts-data'
-  const swiperList = postsData.swiperList
 
-  export default class Index extends wepy.page {
-    data = {
-      swiperList: []
+  export default class Swiper extends wepy.component {
+    props = {
+      swiperList: {
+        type: Array,
+        default: []
+      }
     }
 
-    onLoad() {
-      console.log(swiperList)
-      this.setData({
-        swiperList: swiperList
-      })
+    methods = {
+      onPostDetailTap(e) {
+        const postId = e.currentTarget.dataset.postid
+        this.$emit('onPostDetailTap', postId)
+      }
     }
   }
 </script>

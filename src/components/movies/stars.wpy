@@ -1,0 +1,36 @@
+<style lang="stylus" scoped>
+  .stars
+    display flex
+    .stars-container
+      display flex
+      height 17rpx
+      margin 6rpx 24rpx 0 0
+      image
+        padding-left 3rpx
+        width 17rpx
+        height 17rpx
+    .star-score
+      color #1f3463
+</style>
+<template>
+  <view class="stars">
+    <view class="stars-container">
+      <repeat for="{{movie.stars}}" item="star" key="star">
+        <image src="/images/icon/star.png"></image>
+      </repeat>
+    </view>
+    <text class="star-score">{{movie.score}}</text>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+
+  export default class Stars extends wepy.component {
+    props = {
+      movie: {
+        type: Object,
+        default: {}
+      }
+    }
+  }
+</script>

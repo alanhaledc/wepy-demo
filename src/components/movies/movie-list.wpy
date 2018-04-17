@@ -1,0 +1,69 @@
+<style lang="stylus" scoped>
+  .movie-list
+    display flex
+    flex-direction column
+    background-color #fff
+    .movie-list-container
+      margin 0 auto 20rpx
+      .movie-list-head
+        margin 30rpx 20rpx 22rpx
+        .more
+          float right
+          .more-text
+            vertical-align middle
+            margin-right 10rpx
+            color #1f4ba5
+          .more-img
+            width 9rpx
+            height 16rpx
+            vertical-align middle
+      .movie-container
+        display flex
+</style>
+<template>
+  <view class="movie-list">
+    <view class="movie-list-container">
+      <view class="movie-list-head" @tap="onMoreMoviesTap" data-moviesType="{{movies.type}}">
+        <text class="slogan">{{movies.type}}</text>
+        <view class="more">
+          <text class="more-text">更多</text>
+          <image class="more-img" src="/images/icon/arrow-right.png"></image>
+        </view>
+      </view>
+      <view class="movie-container">
+        <repeat for="{{movies.list}}" key="movie" item="movie">
+          <MovieItem :movie.sync="movie" @onMovieDetailTap.user="onMovieDetailTap"></MovieItem>
+        </repeat>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import MovieItem from './movie-item'
+
+  export default class MovieList extends wepy.component {
+    props = {
+      movies: {
+        type: Object,
+        default: {}
+      }
+    }
+
+    methods = {
+      onMoreMoviesTap(e) {
+        const type = e.currentTarget.dataset.moviestype
+        wepy.navigateTo({
+          url: `/pages/movies/more-movies?type=${type}`
+        })
+      },
+      onMovieDetailTap(movieId) {
+        this.$emit('onMovieDetailTap', movieId)
+      }
+    }
+
+    components = {
+      'MovieItem': MovieItem
+    }
+  }
+</script>

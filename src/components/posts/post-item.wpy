@@ -45,27 +45,38 @@
         vertical-align middle
 </style>
 <template>
-  <view class="post-item">
+  <view class="post-item" @tap="onPostDetailTap" data-postId="{{postItem.postId}}">
     <view class="post-author-date">
-      <image class="post-author" src="../../images/avatar.png"></image>
-      <text class="post-date">Apr 15 2018</text>
+      <image class="post-author" src="{{postItem.avatar}}"></image>
+      <text class="post-date">{{postItem.date}}</text>
     </view>
-    <text class="post-title">微信PostItemPost</text>
-    <image class="post-image" scr="../../images/wx.png"></image>
-    <text class="post-summary">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</text>
+    <text class="post-title">{{postItem.title}}</text>
+    <image class="post-image" src="{{postItem.imgSrc}}"></image>
+    <text class="post-summary">{{postItem.content}}</text>
     <view class="post-like">
       <image class="post-like-image" src="../../images/icon/chat.png"></image>
-      <text class="post-like-font">220</text>
+      <text class="post-like-font">{{postItem.collection}}</text>
       <image class="post-like-image" src="../../images/icon/view.png"></image>
-      <text class="post-like-font">110</text>
+      <text class="post-like-font">{{postItem.reading}}</text>
     </view>
   </view>
 </template>
 <script>
   import wepy from 'wepy'
 
-  export default class Index extends wepy.page {
-    config = {}
-    data = {}
+  export default class PostItem extends wepy.component {
+    props = {
+      postItem: {
+        type: Object,
+        default: {}
+      }
+    }
+
+    methods = {
+      onPostDetailTap(e) {
+        const postId = e.currentTarget.dataset.postid
+        this.$emit('onPostDetailTap', postId)
+      }
+    }
   }
 </script>

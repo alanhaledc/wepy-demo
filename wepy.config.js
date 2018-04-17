@@ -1,16 +1,12 @@
-const path = require('path');
-var prod = process.env.NODE_ENV === 'production';
+const path = require('path')
+var prod = process.env.NODE_ENV === 'production'
 
 module.exports = {
   wpyExt: '.wpy',
   eslint: true,
   cliLogs: !prod,
   build: {
-    web: {
-      htmlTemplate: path.join('src', 'index.template.html'),
-      htmlOutput: path.join('web', 'index.html'),
-      jsOutput: path.join('web', 'index.js')
-    }
+    web: {}
   },
   resolve: {
     alias: {
@@ -21,11 +17,14 @@ module.exports = {
     modules: ['node_modules']
   },
   compilers: {
-    less: {
-      compress: prod
-    },
+    // less: {
+    //   compress: prod
+    // },
+    // sass: {
+    //   'outputStyle': 'compressed'
+    // },
     stylus: {
-      compress: true
+      compress: prod
     },
     babel: {
       sourceMap: true,
@@ -36,7 +35,7 @@ module.exports = {
         'transform-class-properties',
         'transform-decorators-legacy',
         'transform-object-rest-spread',
-        'transform-export-extensions',
+        'transform-export-extensions'
       ]
     }
   },
@@ -47,8 +46,14 @@ module.exports = {
 }
 
 if (prod) {
-  // 压缩sass
+  // // 压缩sass
   // module.exports.compilers['sass'] = {outputStyle: 'compressed'}
+  //
+  // // 压缩less
+  // module.exports.compilers['less'] = {'compress': true}
+
+  // 压缩stylus
+  module.exports.compilers['stylus'] = {'compress': true}
 
   // 压缩js
   module.exports.plugins = {
