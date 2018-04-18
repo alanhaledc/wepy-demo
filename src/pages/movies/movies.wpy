@@ -38,7 +38,6 @@
       inTheaters: {},
       comingSoon: {},
       top250: {},
-      movies: {},
       searchResult: [],
       isContainerShow: true,
       isSearchPanelShow: false
