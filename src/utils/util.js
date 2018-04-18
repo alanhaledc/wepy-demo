@@ -61,7 +61,7 @@ export const processMoviesData = (data) => {
       // 转化星星数为数组
       stars: formateStars(subject.rating.stars),
       title: title,
-      average: subject.rating.average === 0 ? '' : subject.rating.average,
+      average: subject.rating.average,
       coverageUrl: subject.images.large,
       movieId: subject.id
     }
